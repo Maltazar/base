@@ -1,0 +1,9 @@
+global:
+  secretMaps:
+    internal-certs:
+      annotations:
+        helm.sh/resource-policy: "keep"
+      mountPath: "/opt/secrets"
+      keys:
+        - name: api-server
+        - name: ui-server

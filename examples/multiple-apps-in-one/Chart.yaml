@@ -1,0 +1,11 @@
+apiVersion: v2
+description: Installation and setup of awesome-app-suite agent
+type: application
+name: awesome-app-suite
+version: 0.0.3
+appVersion: 0.0.3
+dependencies:
+  - name: base
+    version: 2.3.13
+    # repository: file:///home/ms/Documents/repos/git.myhomelap.lan/general/charts/base
+    repository: https://codeberg.org/api/packages/Maltazar/helm

@@ -1,0 +1,5 @@
+apiVersion: v2
+description: My base general chart for deployment of everything
+type: library
+name: base
+version: 2.3.13

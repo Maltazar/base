@@ -1,0 +1,11 @@
+apiVersion: v2
+description: Generate secrets keys
+type: application
+name: keys
+version: 1.0.0
+appVersion: 0.0.0
+dependencies:
+  - name: base
+    version: 2.3.13
+    repository: file://../../base
+    # repository: https://codeberg.org/api/packages/Maltazar/helm

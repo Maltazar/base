@@ -1,0 +1,104 @@
+global:
+  naming:
+    addReleaseName: appPrefix
+    prefix: dev
+    excludedTypes:
+      ["sidecars", "initContainers", "envsecrets", "envmap", "jobs", "template"]
+
+########################################################################
+# Setup awesome-app-api
+########################################################################
+awesome-app-api:
+  enabled: true
+  image:
+    repository: registry.git.myhomelap.lan/awesome-app
+    imagePullPolicy: Always
+
+  services:
+    awesome-app-api:
+      ports:
+        http:
+          port: 8000
+
+  ingress:
+    awesome-app-api:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: "ca-issuer"
+      tls:
+        - secretName: awesome-app-api-general-tls
+          hosts:
+            - "awesome-app-api.myhomelap.lan"
+      serviceNames:
+        awesome-app-api:
+          host: awesome-app-api.myhomelap.lan
+          port: 8000
+
+    awesome-app-admin:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: "ca-issuer"
+      tls:
+        - secretName: awesome-app-admin-general-tls
+          hosts:
+            - "awesome-app-admin.myhomelap.lan"
+      serviceNames:
+        awesome-app-admin:
+          host: awesome-app-admin.myhomelap.lan
+          port: 8550
+
+  sidecars: ["awesome-app-admin"]
+
+########################################################################
+# Setup awesome-app-db
+########################################################################
+awesome-app-db:
+  enabled: true
+  image:
+    repository: registry.git.myhomelap.lan/awesome-app
+    imagePullPolicy: Always
+
+  services:
+    awesome-app-db:
+      ports:
+        https:
+          port: 8000
+
+########################################################################
+# Setup awesome-app-engine
+########################################################################
+awesome-app-engine:
+  enabled: true
+  image:
+    repository: registry.git.myhomelap.lan/awesome-app
+    imagePullPolicy: Always
+
+  services:
+    awesome-app-engine:
+      ports:
+        https:
+          port: 8000
+
+########################################################################
+# Setup Sidecars
+########################################################################
+
+sidecars:
+  awesome-app-admin:
+    enabled: true
+    image:
+      name: awesome-app-admin
+      repository: registry.git.myhomelap.lan/awesome-app
+      tag: latest
+      imagePullPolicy: Always
+    services:
+      awesome-app-admin:
+        selectors:
+          app: awesome-app-api
+        ports:
+          http:
+            port: 8550
+    container:
+      env:
+        - name: FLET_SERVER_IP
+          value: 0.0.0.0

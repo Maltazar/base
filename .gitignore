@@ -1,0 +1,7 @@
+# ---> Ansible
+*.retry
+*.tgz
+*.crt
+testval*.yaml
+**.tgz
+**Chart.lock

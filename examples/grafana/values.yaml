@@ -1,0 +1,79 @@
+# Setup Grafana
+grafana:
+  enabled: true
+  image:
+    fullPath: grafana/grafana:latest
+    imagePullPolicy: IfNotPresent
+
+  services:
+    grafana:
+      ports:
+        https:
+          port: 3000
+
+  defaultDomain: mydoamin.it
+
+  ingress:
+    grafana:
+      enabled: true
+      serviceNames:
+        grafana:
+          port: 3000
+
+  persistentvolumeclaim:
+    pvc-grafana:
+      annotations:
+        helm.sh/resource-policy: "keep"
+      enabled: true
+      size: 1Gi
+      mountPath: /var/lib/grafana
+
+  configMaps:
+    grafana-ca-certs:
+      action: create
+      dataType: binaryData
+      localPath: config/ca.pem
+      mountPath: /etc/grafana/ca.pem
+      subPath: ca.pem
+
+  secretMaps:
+    grafana-configs-secret:
+      action: existing
+      mountPath: /etc/grafana/grafana.ini
+      subPath: grafana.ini
+
+  externalSecret:
+    grafana-configs:
+      secretName: grafana-configs-secret
+      secretData:
+        grafana.ini: |-
+          [auth.generic_oauth]
+            enabled = false
+            name = Keycloak-OAuth
+            allow_sign_up = true
+            client_id = grafana
+            client_secret = """{{ print ( fromJson .jsonResult ).password  }}"""
+            scopes = openid email profile offline_access groups
+            email_attribute_path = email
+            login_attribute_path = username
+            name_attribute_path = full_name
+            auth_url = https://keycloak.mydoamin.it/auth/realms/mydoamin.it/protocol/openid-connect/auth
+            token_url = https://keycloak.mydoamin.it/auth/realms/mydoamin.it/protocol/openid-connect/token
+            api_url = https://keycloak.mydoamin.it/auth/realms/mydoamin.it/protocol/openid-connect/userinfo
+            role_attribute_path = contains(groups[*], 'Admins') && 'Admin' || contains(groups[*], 'Users') && 'Editor' || 'Viewer'
+            tls_client_ca = /etc/grafana/ca.pem
+            allow_assign_grafana_admin = true
+          [auth]
+            # signout_redirect_url = https://keycloak.mydoamin.it/auth/realms/mydoamin.it/protocol/openid-connect/logout?client_id=grafana&id_token_hint={{ printf "%s%s%s" "{{" "id_token" "}}" }}
+            signout_redirect_url = https://keycloak.mydoamin.it/auth/realms/mydoamin.it/protocol/openid-connect/logout
+
+          #################################### Server ####################################
+          [server]
+            root_url = https://grafana.mydoamin.it/
+            domain = grafana.mydoamin.it
+
+      requestData:
+        - secretKey: jsonResult
+          remoteRef:
+            key: "grafana_oauth"
+            property: item/grafana
